@@ -16,20 +16,16 @@ with open('seed_list.json', 'r') as g:
 def calculate_pattern(guess: str, answer: str) -> str:
     pattern = ['b'] * 5
     answer_counts = Counter(answer)
-    try:
-        for i in range(5):
-            if guess[i] == answer[i]:
-                pattern[i] = 'g'
-                answer_counts[guess[i]] -= 1
-        for i in range(5):
-            if pattern[i] == 'g': continue
-            if guess[i] in answer_counts and answer_counts[guess[i]] > 0:
-                pattern[i] = 'y'
-                answer_counts[guess[i]] -= 1
-        return "".join(pattern)
-    except Exception as e:
-        print(f"Error calculating pattern for guess '{guess}' and answer '{answer}': {e}")
-        return "bbbbb"
+    for i in range(5):
+        if guess[i] == answer[i]:
+            pattern[i] = 'g'
+            answer_counts[guess[i]] -= 1
+    for i in range(5):
+        if pattern[i] == 'g': continue
+        if guess[i] in answer_counts and answer_counts[guess[i]] > 0:
+            pattern[i] = 'y'
+            answer_counts[guess[i]] -= 1
+    return "".join(pattern)
 
 
 def calculate_entropy_for_guess(guess: str, possible_answers: list[str]) -> float:
@@ -89,7 +85,7 @@ class WordleEnv:
         if len(self.possible_answers) <= 1:
             return {"entropies": {}}
 
-        # This is the compute-intensive part you requested
+        # This is the compute-intensive part, in particular on the first turn.
         print("Calculating entropies for all possible guesses...")
         entropies = {
             guess: calculate_entropy_for_guess(guess, self.possible_answers) 
@@ -174,6 +170,7 @@ class WordleEnv:
         
         return observation, reward, terminated, info
 
+
 def main():
     env = WordleEnv()
     observation, info = env.reset()
@@ -187,7 +184,7 @@ def main():
     
     while not terminated:
         print("\n" + "="*30)
-        action_word = input("Enter your guess (or 'quit' to stop): ")
+        
         # # In a real RL setup, an agent (policy network) would choose the action
         # # Here, we'll "cheat" and use our solver logic to pick the best action
         
@@ -197,6 +194,8 @@ def main():
         # else:
         #     # Use the pre-computed entropies from the last step's info dict
         #     action_word = info['entropies'][0][0]  # Pick the word with highest entropy
+
+        action_word = input("Enter your guess (or 'quit' to stop): ")
         if action_word.lower() == 'quit':
             print("Exiting game.")
             break

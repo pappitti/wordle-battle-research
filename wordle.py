@@ -59,10 +59,10 @@ class WordleEnv:
         self.num_valid_attempts = 0 
 
         # For debugging
-        print(f"(New Game - Target is {self.target_word})")
+        # print(f"(New Game - Target is {self.target_word})")
         
         observation = self._get_obs()
-        info = self._get_info()
+        info = {} # self._get_info() # removed to speed up initialization
         return observation, info
 
     def _get_obs(self):
@@ -82,8 +82,14 @@ class WordleEnv:
         Constructs the info dictionary with diagnostic data.
         This is where we put the compute-intensive entropy calculations.
         """
-        if len(self.possible_answers) <= 1:
+        if len(self.possible_answers) == 0:
             return {"entropies": {}}
+        
+        if len(self.possible_answers) == 1:
+            return {
+                "num_possible_answers": 1,
+                "entropies": [(self.possible_answers[0], 0.0)]
+            }
 
         # This is the compute-intensive part, in particular on the first turn.
         print("Calculating entropies for all possible guesses...")
@@ -175,9 +181,9 @@ def main():
     env = WordleEnv()
     observation, info = env.reset()
     
-    # Get the initial info to pick the best first word
-    best_first_guesses = info['entropies'][:20]
-    print(f"\nBest first guess based on initial entropy calculation: {best_first_guesses}")
+    # # Get the initial info to pick the best first word
+    # best_first_guesses = info['entropies'][:20]
+    # print(f"\nBest first guess based on initial entropy calculation: {best_first_guesses}")
 
     terminated = False
     total_reward = 0
@@ -208,6 +214,9 @@ def main():
         print(f"Current State: {observation}")
         print(f"--> Received Reward: {reward:.3f}")
         print(f"--> Game Terminated: {terminated}")
+        if not terminated:
+            best_guesses = info['entropies'][:min(5, len(info['entropies']))] if info['entropies'] else []
+            print(f"Top 5 next guesses based on entropy: {best_guesses}")
 
     print("\n" + "="*30)
     print(f"Game Over!")

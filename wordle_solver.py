@@ -62,7 +62,7 @@ class WordleEnv:
         # print(f"(New Game - Target is {self.target_word})")
         
         observation = self._get_obs()
-        info = {} # self._get_info() # removed to speed up initialization
+        info = self._get_info() # removed to speed up initialization
         return observation, info
 
     def _get_obs(self):
@@ -182,8 +182,8 @@ def main():
     observation, info = env.reset()
     
     # # Get the initial info to pick the best first word
-    # best_first_guesses = info['entropies'][:20]
-    # print(f"\nBest first guess based on initial entropy calculation: {best_first_guesses}")
+    best_first_guesses = info['entropies'][:20]
+    print(f"\nBest first guess based on initial entropy calculation: {best_first_guesses}")
 
     terminated = False
     total_reward = 0
